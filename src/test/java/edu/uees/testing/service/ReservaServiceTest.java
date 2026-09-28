@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -299,6 +301,22 @@ class ReservaServiceTest {
             verify(disponibilidad, never()).estaDisponible(any());
             verify(repository, never()).guardar(any());
             verify(notificador, never()).enviarConfirmacion(any());
+        }
+
+        @Test
+        @DisplayName("CP-19 · se guarda antes de notificar")
+        void reservaSeGuardaAntesDeNotificar() {
+            // Arrange
+            when(disponibilidad.estaDisponible(any())).thenReturn(true);
+            Reserva reserva = new Reserva("R-003", "VIP");
+
+            // Act
+            servicio.confirmar(reserva);
+
+            // Assert
+            InOrder orden = inOrder(repository, notificador);
+            orden.verify(repository).guardar(reserva);
+            orden.verify(notificador).enviarConfirmacion(reserva);
         }
     }
 }
