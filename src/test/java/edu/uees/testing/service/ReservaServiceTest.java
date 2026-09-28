@@ -1,11 +1,20 @@
 package edu.uees.testing.service;
 
+import edu.uees.testing.availability.DisponibilidadClient;
+import edu.uees.testing.domain.EstadoReserva;
+import edu.uees.testing.domain.Reserva;
+import edu.uees.testing.notification.Notificador;
+import edu.uees.testing.repository.ReservaRepository;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Punto de partida.
@@ -13,9 +22,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class ReservaServiceTest {
 
-    // puedeCancelar() y calcularTotal() no consultan colaboradores,
-    // por eso en este laboratorio se construye el servicio con null.
-    private final ReservaService servicio = new ReservaService(null, null, null);
+    // JUnit crea una instancia nueva por prueba, así que cada prueba
+    // recibe dobles limpios.
+    // Stub: controla la respuesta de disponibilidad.
+    private final DisponibilidadClient disponibilidad = mock(DisponibilidadClient.class);
+    // Mocks: permiten verificar que se guarda y se notifica.
+    private final ReservaRepository repository = mock(ReservaRepository.class);
+    private final Notificador notificador = mock(Notificador.class);
+
+    private final ReservaService servicio =
+            new ReservaService(disponibilidad, repository, notificador);
 
     @Test
     void entornoJUnitFunciona() {
@@ -145,5 +161,21 @@ class ReservaServiceTest {
 
         // Assert
         assertEquals("Total base inválido", ex.getMessage());
+    }
+
+    // CP-10
+    @Test
+    void reservaDisponibleSeConfirmaGuardaYNotifica() {
+        // Arrange
+        when(disponibilidad.estaDisponible(any())).thenReturn(true);
+        Reserva reserva = new Reserva("R-001", "NORMAL");
+
+        // Act
+        servicio.confirmar(reserva);
+
+        // Assert
+        assertEquals(EstadoReserva.CONFIRMADA, reserva.getEstado());
+        verify(repository).guardar(reserva);
+        verify(notificador).enviarConfirmacion(reserva);
     }
 }
