@@ -39,6 +39,15 @@ Esta regla depende de tres servicios externos: el de disponibilidad, el reposito
 | CP-11 | Confirmar solo con disponibilidad | Horario no disponible | Reserva R-002, disponibilidad: no | Error "Horario no disponible"; no se guarda ni se notifica | Alternativo | Guardar o avisar de una reserva rechazada. |
 | CP-12 | La reserva es obligatoria | Reserva nula | `null` | Error "Reserva obligatoria"; no se consulta ningún servicio | Excepción | Consultar servicios externos con datos incompletos. |
 
+## Regla de la reserva (agregada tras el análisis de JaCoCo)
+
+El reporte de cobertura mostró que la validación del identificador de la reserva nunca se ejecutaba en las pruebas. Se agregaron estos casos para protegerla.
+
+| ID | Regla | Escenario | Entrada | Esperado | Tipo | Riesgo |
+|---|---|---|---|---|---|---|
+| CP-13 | El id es obligatorio | Reserva sin id | id `null` | Error "Id obligatorio" | Inválido | Crear reservas imposibles de identificar. |
+| CP-14 | El id es obligatorio | Id en blanco | id `"   "` | Error "Id obligatorio" | Inválido | Aceptar un id que solo tiene espacios. |
+
 ## Por qué se eligió cada caso
 
 - **CP-01:** confirma que la regla funciona en una situación común.
@@ -52,3 +61,4 @@ Esta regla depende de tres servicios externos: el de disponibilidad, el reposito
 - **CP-10:** comprueba el camino exitoso completo: la reserva cambia de estado, se guarda y el cliente recibe el aviso.
 - **CP-11:** comprueba que una reserva rechazada no deja rastros: ni se guarda ni se envía una confirmación falsa.
 - **CP-12:** comprueba que el proceso se detiene de inmediato si falta la reserva, antes de consultar cualquier servicio.
+- **CP-13 y CP-14:** la validación del id tiene dos condiciones (que no sea nulo y que no esté en blanco), y cada caso comprueba una de ellas.
