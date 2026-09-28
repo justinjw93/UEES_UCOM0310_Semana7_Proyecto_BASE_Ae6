@@ -5,217 +5,242 @@ import edu.uees.testing.domain.EstadoReserva;
 import edu.uees.testing.domain.Reserva;
 import edu.uees.testing.notification.Notificador;
 import edu.uees.testing.repository.ReservaRepository;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Punto de partida.
- * El estudiante debe ampliar esta suite durante las actividades.
+ * Pruebas de ReservaService organizadas por regla de negocio.
+ * Cada prueba indica el caso de la matriz (docs/01_MATRIZ_CASOS_PLANTILLA.md).
  */
+@ExtendWith(MockitoExtension.class)
+@DisplayName("ReservaService")
 class ReservaServiceTest {
 
-    // JUnit crea una instancia nueva por prueba, así que cada prueba
-    // recibe dobles limpios.
     // Stub: controla la respuesta de disponibilidad.
-    private final DisponibilidadClient disponibilidad = mock(DisponibilidadClient.class);
-    // Mocks: permiten verificar que se guarda y se notifica.
-    private final ReservaRepository repository = mock(ReservaRepository.class);
-    private final Notificador notificador = mock(Notificador.class);
+    @Mock
+    private DisponibilidadClient disponibilidad;
 
-    private final ReservaService servicio =
-            new ReservaService(disponibilidad, repository, notificador);
+    // Mocks: permiten verificar que se guarda y se notifica.
+    @Mock
+    private ReservaRepository repository;
+
+    @Mock
+    private Notificador notificador;
+
+    @InjectMocks
+    private ReservaService servicio;
 
     @Test
     void entornoJUnitFunciona() {
         assertTrue(true);
     }
 
-    // CP-01
-    @Test
-    void cincoHorasPermitenCancelar() {
-        // Arrange
-        int horas = 5;
+    @Nested
+    @DisplayName("Cancelación: se permite con 2 horas o más")
+    class Cancelacion {
 
-        // Act
-        boolean resultado = servicio.puedeCancelar(horas);
+        @Test
+        @DisplayName("CP-01 · 5 horas permiten cancelar")
+        void cincoHorasPermitenCancelar() {
+            // Arrange
+            int horas = 5;
 
-        // Assert
-        assertTrue(resultado);
+            // Act
+            boolean resultado = servicio.puedeCancelar(horas);
+
+            // Assert
+            assertTrue(resultado);
+        }
+
+        @Test
+        @DisplayName("CP-02 · 2 horas es el límite permitido")
+        void dosHorasEsElLimitePermitido() {
+            // Arrange
+            int horas = 2;
+
+            // Act
+            boolean resultado = servicio.puedeCancelar(horas);
+
+            // Assert
+            assertTrue(resultado);
+        }
+
+        @Test
+        @DisplayName("CP-03 · 1 hora no permite cancelar")
+        void unaHoraNoPermiteCancelar() {
+            // Arrange
+            int horas = 1;
+
+            // Act
+            boolean resultado = servicio.puedeCancelar(horas);
+
+            // Assert
+            assertFalse(resultado);
+        }
+
+        @Test
+        @DisplayName("CP-04 · 0 horas no permite cancelar")
+        void ceroHorasNoPermiteCancelar() {
+            // Arrange
+            int horas = 0;
+
+            // Act
+            boolean resultado = servicio.puedeCancelar(horas);
+
+            // Assert
+            assertFalse(resultado);
+        }
     }
 
-    // CP-02
-    @Test
-    void dosHorasEsElLimitePermitido() {
-        // Arrange
-        int horas = 2;
+    @Nested
+    @DisplayName("Descuentos: VIP 15 %, ESTUDIANTE 10 %, NORMAL sin descuento")
+    class Descuentos {
 
-        // Act
-        boolean resultado = servicio.puedeCancelar(horas);
+        @Test
+        @DisplayName("CP-05 · NORMAL no recibe descuento")
+        void normalNoRecibeDescuento() {
+            // Arrange
+            String tipo = "NORMAL";
+            double totalBase = 100;
 
-        // Assert
-        assertTrue(resultado);
+            // Act
+            double total = servicio.calcularTotal(tipo, totalBase);
+
+            // Assert
+            assertEquals(100.0, total, 0.001);
+        }
+
+        @Test
+        @DisplayName("CP-06 · VIP recibe 15 %")
+        void vipRecibeQuincePorCiento() {
+            // Arrange
+            String tipo = "VIP";
+            double totalBase = 100;
+
+            // Act
+            double total = servicio.calcularTotal(tipo, totalBase);
+
+            // Assert
+            assertEquals(85.0, total, 0.001);
+        }
+
+        @Test
+        @DisplayName("CP-07 · ESTUDIANTE recibe 10 %")
+        void estudianteRecibeDiezPorCiento() {
+            // Arrange
+            String tipo = "ESTUDIANTE";
+            double totalBase = 100;
+
+            // Act
+            double total = servicio.calcularTotal(tipo, totalBase);
+
+            // Assert
+            assertEquals(90.0, total, 0.001);
+        }
+
+        @Test
+        @DisplayName("CP-08 · total cero con VIP devuelve cero")
+        void totalCeroVipDevuelveCero() {
+            // Arrange
+            String tipo = "VIP";
+            double totalBase = 0;
+
+            // Act
+            double total = servicio.calcularTotal(tipo, totalBase);
+
+            // Assert
+            assertEquals(0.0, total, 0.001);
+        }
+
+        @Test
+        @DisplayName("CP-09 · total negativo es inválido")
+        void totalNegativoEsInvalido() {
+            // Arrange
+            String tipo = "NORMAL";
+            double totalBase = -1;
+
+            // Act
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> servicio.calcularTotal(tipo, totalBase)
+            );
+
+            // Assert
+            assertEquals("Total base inválido", ex.getMessage());
+        }
     }
 
-    // CP-03
-    @Test
-    void unaHoraNoPermiteCancelar() {
-        // Arrange
-        int horas = 1;
+    @Nested
+    @DisplayName("Confirmación: solo con disponibilidad; guarda y notifica")
+    class Confirmacion {
 
-        // Act
-        boolean resultado = servicio.puedeCancelar(horas);
+        @Test
+        @DisplayName("CP-10 · reserva disponible se confirma, guarda y notifica")
+        void reservaDisponibleSeConfirmaGuardaYNotifica() {
+            // Arrange
+            when(disponibilidad.estaDisponible(any())).thenReturn(true);
+            Reserva reserva = new Reserva("R-001", "NORMAL");
 
-        // Assert
-        assertFalse(resultado);
-    }
+            // Act
+            servicio.confirmar(reserva);
 
-    // CP-04
-    @Test
-    void ceroHorasNoPermiteCancelar() {
-        // Arrange
-        int horas = 0;
+            // Assert
+            assertEquals(EstadoReserva.CONFIRMADA, reserva.getEstado());
+            verify(repository).guardar(reserva);
+            verify(notificador).enviarConfirmacion(reserva);
+        }
 
-        // Act
-        boolean resultado = servicio.puedeCancelar(horas);
+        @Test
+        @DisplayName("CP-11 · reserva no disponible no se guarda ni notifica")
+        void reservaNoDisponibleNoSeGuardaNiNotifica() {
+            // Arrange
+            when(disponibilidad.estaDisponible(any())).thenReturn(false);
+            Reserva reserva = new Reserva("R-002", "NORMAL");
 
-        // Assert
-        assertFalse(resultado);
-    }
+            // Act
+            IllegalStateException ex = assertThrows(
+                    IllegalStateException.class,
+                    () -> servicio.confirmar(reserva)
+            );
 
-    // CP-05
-    @Test
-    void normalNoRecibeDescuento() {
-        // Arrange
-        String tipo = "NORMAL";
-        double totalBase = 100;
+            // Assert
+            assertEquals("Horario no disponible", ex.getMessage());
+            assertEquals(EstadoReserva.PENDIENTE, reserva.getEstado());
+            verify(repository, never()).guardar(any());
+            verify(notificador, never()).enviarConfirmacion(any());
+        }
 
-        // Act
-        double total = servicio.calcularTotal(tipo, totalBase);
+        @Test
+        @DisplayName("CP-12 · reserva nula no consulta dependencias")
+        void reservaNulaNoConsultaDependencias() {
+            // Arrange
+            Reserva reserva = null;
 
-        // Assert
-        assertEquals(100.0, total, 0.001);
-    }
+            // Act
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> servicio.confirmar(reserva)
+            );
 
-    // CP-06
-    @Test
-    void vipRecibeQuincePorCiento() {
-        // Arrange
-        String tipo = "VIP";
-        double totalBase = 100;
-
-        // Act
-        double total = servicio.calcularTotal(tipo, totalBase);
-
-        // Assert
-        assertEquals(85.0, total, 0.001);
-    }
-
-    // CP-07
-    @Test
-    void estudianteRecibeDiezPorCiento() {
-        // Arrange
-        String tipo = "ESTUDIANTE";
-        double totalBase = 100;
-
-        // Act
-        double total = servicio.calcularTotal(tipo, totalBase);
-
-        // Assert
-        assertEquals(90.0, total, 0.001);
-    }
-
-    // CP-08
-    @Test
-    void totalCeroVipDevuelveCero() {
-        // Arrange
-        String tipo = "VIP";
-        double totalBase = 0;
-
-        // Act
-        double total = servicio.calcularTotal(tipo, totalBase);
-
-        // Assert
-        assertEquals(0.0, total, 0.001);
-    }
-
-    // CP-09
-    @Test
-    void totalNegativoEsInvalido() {
-        // Arrange
-        String tipo = "NORMAL";
-        double totalBase = -1;
-
-        // Act
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> servicio.calcularTotal(tipo, totalBase)
-        );
-
-        // Assert
-        assertEquals("Total base inválido", ex.getMessage());
-    }
-
-    // CP-10
-    @Test
-    void reservaDisponibleSeConfirmaGuardaYNotifica() {
-        // Arrange
-        when(disponibilidad.estaDisponible(any())).thenReturn(true);
-        Reserva reserva = new Reserva("R-001", "NORMAL");
-
-        // Act
-        servicio.confirmar(reserva);
-
-        // Assert
-        assertEquals(EstadoReserva.CONFIRMADA, reserva.getEstado());
-        verify(repository).guardar(reserva);
-        verify(notificador).enviarConfirmacion(reserva);
-    }
-
-    // CP-11
-    @Test
-    void reservaNoDisponibleNoSeGuardaNiNotifica() {
-        // Arrange
-        when(disponibilidad.estaDisponible(any())).thenReturn(false);
-        Reserva reserva = new Reserva("R-002", "NORMAL");
-
-        // Act
-        IllegalStateException ex = assertThrows(
-                IllegalStateException.class,
-                () -> servicio.confirmar(reserva)
-        );
-
-        // Assert
-        assertEquals("Horario no disponible", ex.getMessage());
-        assertEquals(EstadoReserva.PENDIENTE, reserva.getEstado());
-        verify(repository, never()).guardar(any());
-        verify(notificador, never()).enviarConfirmacion(any());
-    }
-
-    // CP-12
-    @Test
-    void reservaNulaNoConsultaDependencias() {
-        // Arrange
-        Reserva reserva = null;
-
-        // Act
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> servicio.confirmar(reserva)
-        );
-
-        // Assert
-        assertEquals("Reserva obligatoria", ex.getMessage());
-        verify(disponibilidad, never()).estaDisponible(any());
-        verify(repository, never()).guardar(any());
-        verify(notificador, never()).enviarConfirmacion(any());
+            // Assert
+            assertEquals("Reserva obligatoria", ex.getMessage());
+            verify(disponibilidad, never()).estaDisponible(any());
+            verify(repository, never()).guardar(any());
+            verify(notificador, never()).enviarConfirmacion(any());
+        }
     }
 }
