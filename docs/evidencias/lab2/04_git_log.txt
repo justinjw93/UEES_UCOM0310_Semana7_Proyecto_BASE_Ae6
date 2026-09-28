@@ -1,0 +1,17 @@
+$ git branch
+  main
+  test/lab1-junit-casos
+* test/lab2-dobles-cobertura
+
+$ git log --oneline --decorate
+f732154 (HEAD -> test/lab2-dobles-cobertura) docs: analizar cobertura jacoco
+30d4ddd test: agregar caso detectado por jacoco
+d00d71c test: cubrir flujo sin disponibilidad y reserva nula
+3e2bfff test: agregar escenarios con stub y mock
+566fa20 (origin/main, main) Merge pull request #1 from justinjw93/test/lab1-junit-casos
+e2a7bb7 (origin/test/lab1-junit-casos, test/lab1-junit-casos) docs: simplificar redaccion de matriz y reflexion del laboratorio 1
+d188fc1 docs: registrar evidencia y reflexion del laboratorio 1
+3895da5 test: cubrir descuentos y total negativo
+ae7a9fc test: agregar casos de cancelacion con limites
+00baf9a docs: disenar matriz de casos de cancelacion y descuentos
+d9541ec chore: registrar linea base semana 7

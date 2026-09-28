@@ -8,6 +8,7 @@ Los casos se diseñaron antes de escribir las pruebas. Cada uno parte de una reg
 |---|---|---|
 | `puedeCancelar(int)` | Una reserva se puede cancelar con 2 horas o más de anticipación. | Que el límite de 2 horas quede mal definido. |
 | `calcularTotal(String, double)` | VIP tiene 15 % de descuento, ESTUDIANTE 10 % y NORMAL ninguno. No se aceptan totales negativos. | Que se aplique un descuento equivocado o se acepte un monto negativo. |
+| `confirmar(Reserva)` | Una reserva solo se confirma si hay disponibilidad. Al confirmarse se guarda y se notifica al cliente. | Guardar o avisar de una reserva que no se pudo confirmar. |
 
 ## Regla de cancelación
 
@@ -28,6 +29,25 @@ Los casos se diseñaron antes de escribir las pruebas. Cada uno parte de una reg
 | CP-08 | Total no negativo | Total cero | `VIP`, 0 | 0.0 | Límite | Rechazar el menor total permitido. |
 | CP-09 | Total no negativo | Total negativo | `NORMAL`, -1 | Error: "Total base inválido" | Inválido | Aceptar un cobro negativo. |
 
+## Regla de confirmación
+
+Esta regla depende de tres servicios externos: el de disponibilidad, el repositorio donde se guardan las reservas y el de notificaciones. En las pruebas se reemplazan por dobles de prueba, para no depender de una base de datos, de un servicio real ni de un servidor de correo.
+
+| ID | Regla | Escenario | Entrada | Esperado | Tipo | Riesgo |
+|---|---|---|---|---|---|---|
+| CP-10 | Confirmar solo con disponibilidad | Horario disponible | Reserva R-001, disponibilidad: sí | Reserva CONFIRMADA, guardada y notificada | Normal | Confirmar sin guardar o sin avisar al cliente. |
+| CP-11 | Confirmar solo con disponibilidad | Horario no disponible | Reserva R-002, disponibilidad: no | Error "Horario no disponible"; no se guarda ni se notifica | Alternativo | Guardar o avisar de una reserva rechazada. |
+| CP-12 | La reserva es obligatoria | Reserva nula | `null` | Error "Reserva obligatoria"; no se consulta ningún servicio | Excepción | Consultar servicios externos con datos incompletos. |
+
+## Regla de la reserva (agregada tras el análisis de JaCoCo)
+
+El reporte de cobertura mostró que la validación del identificador de la reserva nunca se ejecutaba en las pruebas. Se agregaron estos casos para protegerla.
+
+| ID | Regla | Escenario | Entrada | Esperado | Tipo | Riesgo |
+|---|---|---|---|---|---|---|
+| CP-13 | El id es obligatorio | Reserva sin id | id `null` | Error "Id obligatorio" | Inválido | Crear reservas imposibles de identificar. |
+| CP-14 | El id es obligatorio | Id en blanco | id `"   "` | Error "Id obligatorio" | Inválido | Aceptar un id que solo tiene espacios. |
+
 ## Por qué se eligió cada caso
 
 - **CP-01:** confirma que la regla funciona en una situación común.
@@ -38,3 +58,7 @@ Los casos se diseñaron antes de escribir las pruebas. Cada uno parte de una reg
 - **CP-06 y CP-07:** comprueban cada descuento. Se usa 100 como monto porque así el porcentaje se lee directamente en el resultado.
 - **CP-08:** 0 es el menor total válido, y aun con descuento VIP el resultado debe seguir siendo 0.
 - **CP-09:** confirma que un monto negativo se rechaza con un mensaje claro y no se calcula en silencio.
+- **CP-10:** comprueba el camino exitoso completo: la reserva cambia de estado, se guarda y el cliente recibe el aviso.
+- **CP-11:** comprueba que una reserva rechazada no deja rastros: ni se guarda ni se envía una confirmación falsa.
+- **CP-12:** comprueba que el proceso se detiene de inmediato si falta la reserva, antes de consultar cualquier servicio.
+- **CP-13 y CP-14:** la validación del id tiene dos condiciones (que no sea nulo y que no esté en blanco), y cada caso comprueba una de ellas.
