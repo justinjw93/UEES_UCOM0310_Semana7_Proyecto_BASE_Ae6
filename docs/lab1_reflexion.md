@@ -3,27 +3,27 @@
 **Estudiante:** Justin Arreaga Ramírez
 **Rama:** `test/lab1-junit-casos`
 
-## 1. Línea base
+## 1. Punto de partida
 
-Antes de modificar la suite se verificó el entorno y se ejecutó la prueba mínima `entornoJUnitFunciona()`.
+Antes de hacer cambios se revisó que las herramientas estuvieran listas y que el proyecto funcionara tal como se entregó.
 
 | Herramienta | Versión |
 |---|---|
-| Java | OpenJDK 21.0.12 (Microsoft) |
+| Java | 21.0.12 |
 | Maven | 3.9.16 |
 | Git | 2.45.1 |
 
-Resultado: `Tests run: 1, Failures: 0` y `BUILD SUCCESS`.
+La prueba inicial del proyecto pasó sin problemas.
 Evidencia: [`evidencias/lab1/01_linea_base.txt`](evidencias/lab1/01_linea_base.txt)
 
-## 2. Matriz de casos
+## 2. Diseño de casos
 
-Se diseñaron 9 casos (CP-01 a CP-09) antes de escribir cualquier `@Test`: 4 para la regla de cancelación y 5 para la regla de descuentos. La matriz incluye casos normales, alternativos, límite, extremo e inválido.
-Detalle y justificación: [`01_MATRIZ_CASOS_PLANTILLA.md`](01_MATRIZ_CASOS_PLANTILLA.md)
+Primero se diseñaron 9 casos, sin escribir código todavía: 4 para la regla de cancelación y 5 para la de descuentos. Incluyen situaciones comunes, variantes de la regla, valores en el límite y un dato inválido.
+Detalle: [`01_MATRIZ_CASOS_PLANTILLA.md`](01_MATRIZ_CASOS_PLANTILLA.md)
 
-## 3. Suite implementada
+## 3. Pruebas implementadas
 
-Todas las pruebas siguen la estructura AAA (Arrange, Act, Assert) y tienen nombres que describen el comportamiento esperado.
+Cada prueba sigue tres pasos: preparar los datos, ejecutar la acción y comprobar el resultado (estructura AAA). Los nombres dicen qué comportamiento se espera, para que se entiendan sin leer el código.
 
 | Caso | Prueba | Tipo |
 |---|---|---|
@@ -37,57 +37,46 @@ Todas las pruebas siguen la estructura AAA (Arrange, Act, Assert) y tienen nombr
 | CP-08 | `totalCeroVipDevuelveCero` | Límite |
 | CP-09 | `totalNegativoEsInvalido` | Inválido |
 
-Se conservó `entornoJUnitFunciona()`. El servicio se construye con `new ReservaService(null, null, null)` porque `puedeCancelar()` y `calcularTotal()` no consultan colaboradores. Esta decisión solo es válida para estos dos métodos; `confirmar()` requiere dobles de prueba y se abordará en el Laboratorio 2.
+Decisiones tomadas:
 
-Los valores decimales se comparan con una tolerancia de `0.001` para evitar falsos fallos por redondeo de `double`. En la excepción se verifica también el mensaje `"Total base inválido"`, no solo el tipo.
+- Se conservó la prueba original del proyecto.
+- El servicio se creó sin sus servicios externos (disponibilidad, repositorio y notificador), porque los dos métodos probados no los usan. La confirmación de reservas sí los necesita, y se trabajará en el Laboratorio 2.
+- En el caso inválido se revisa el tipo de error y también su mensaje, para asegurar que el rechazo es el esperado.
 
-## 4. Ejecución
+## 4. Resultado de la ejecución
 
-```
-mvn clean test
-Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
-BUILD SUCCESS
-```
-
+Con `mvn clean test` pasaron las 10 pruebas (las 9 nuevas y la original), sin fallos.
 Evidencia: [`evidencias/lab1/03_mvn_clean_test_final.txt`](evidencias/lab1/03_mvn_clean_test_final.txt)
 
-## 5. Microexperimento: detectar un bug de frontera
+## 5. Microexperimento: introducir un error a propósito
 
-Se cambió temporalmente la regla de `ReservaService.puedeCancelar()`:
+Para comprobar que las pruebas detectan errores reales, se cambió por un momento la regla de cancelación de "2 horas o más" a "más de 2 horas":
 
 ```java
 return horasAnticipacion > 2;   // original: >= 2
 ```
 
-Resultado de `mvn test`:
-
-```
-Tests run: 10, Failures: 1, Errors: 0, Skipped: 0
-ReservaServiceTest.dosHorasEsElLimitePermitido:48 expected: <true> but was: <false>
-BUILD FAILURE
-```
-
-Luego se restauró el código con `git restore` y se volvió a ejecutar la suite completa en verde. El cambio no se registró en ningún commit.
+Al volver a ejecutar, falló una sola prueba, `dosHorasEsElLimitePermitido`: esperaba poder cancelar con 2 horas y el sistema lo negó. Después se restauró el código original, se comprobó que todo volvía a pasar y el cambio no se guardó en el historial.
 Evidencia: [`evidencias/lab1/02_microexperimento_frontera.txt`](evidencias/lab1/02_microexperimento_frontera.txt)
 
-## 6. Respuesta: ¿qué prueba detectó mejor un posible error de frontera y por qué?
+## 6. ¿Qué prueba detectó mejor un posible error de frontera y por qué?
 
-La prueba `dosHorasEsElLimitePermitido()` (CP-02). Fue la **única** de las diez que falló al cambiar `>=` por `>`. Las pruebas con 5, 1 y 0 horas siguieron pasando porque esos valores producen el mismo resultado con ambos operadores: 5 es mayor que 2 en los dos casos, y 1 y 0 no lo son en ninguno.
+Fue `dosHorasEsElLimitePermitido` (CP-02), la única que falló. Las pruebas con 5, 1 y 0 horas siguieron pasando porque en esos valores las dos versiones de la regla dan la misma respuesta.
 
-El valor 2 es el único punto donde `>=` y `>` responden distinto, por eso un caso ubicado exactamente en la frontera es más valioso que repetir muchos valores normales. Si la suite solo tuviera casos alejados del límite, el defecto habría pasado desapercibido con todas las pruebas en verde.
+Las dos versiones solo se diferencian en las 2 horas exactas. Por eso un caso ubicado en el límite vale más que muchos casos comunes: sin él, el error habría pasado con todas las pruebas en verde.
 
 ## 7. Checklist
 
-- [x] Puedo explicar cada caso de mi matriz.
-- [x] Incluí al menos un caso límite (CP-02, CP-03, CP-08).
-- [x] Incluí al menos un caso inválido (CP-09).
-- [x] Mis pruebas tienen nombres descriptivos.
+- [x] Puedo explicar cada caso de la matriz.
+- [x] Incluí casos límite (CP-02, CP-03, CP-08).
+- [x] Incluí un caso inválido (CP-09).
+- [x] Las pruebas tienen nombres descriptivos.
 - [x] Las pruebas pasan con `mvn clean test`.
-- [x] No alteré el resultado esperado solo para obtener verde.
+- [x] No cambié ningún resultado esperado solo para que la prueba pasara.
 
 ### Producto formativo
 
-- [x] Matriz con al menos 8 casos diseñados (9).
-- [x] Suite JUnit con al menos 7 pruebas implementadas (9 nuevas).
+- [x] Matriz con al menos 8 casos (se diseñaron 9).
+- [x] Al menos 7 pruebas implementadas (se implementaron 9).
 - [x] Evidencia de `mvn clean test` exitoso.
-- [x] Respuesta breve sobre la prueba que detecta mejor un error de frontera.
+- [x] Respuesta sobre la prueba que mejor detecta un error de frontera.
