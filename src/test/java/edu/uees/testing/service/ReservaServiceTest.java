@@ -104,6 +104,19 @@ class ReservaServiceTest {
             // Assert
             assertFalse(resultado);
         }
+
+        @Test
+        @DisplayName("CP-15 · horas negativas no permiten cancelar")
+        void horasNegativasNoPermitenCancelar() {
+            // Arrange
+            int horas = -1;
+
+            // Act
+            boolean resultado = servicio.puedeCancelar(horas);
+
+            // Assert
+            assertFalse(resultado);
+        }
     }
 
     @Nested
@@ -171,6 +184,51 @@ class ReservaServiceTest {
         void totalNegativoEsInvalido() {
             // Arrange
             String tipo = "NORMAL";
+            double totalBase = -1;
+
+            // Act
+            IllegalArgumentException ex = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> servicio.calcularTotal(tipo, totalBase)
+            );
+
+            // Assert
+            assertEquals("Total base inválido", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("CP-16 · VIP en minúsculas recibe 15 %")
+        void vipEnMinusculasRecibeQuincePorCiento() {
+            // Arrange
+            String tipo = "vip";
+            double totalBase = 100;
+
+            // Act
+            double total = servicio.calcularTotal(tipo, totalBase);
+
+            // Assert
+            assertEquals(85.0, total, 0.001);
+        }
+
+        @Test
+        @DisplayName("CP-17 · tipo no reconocido no recibe descuento")
+        void tipoNoReconocidoNoRecibeDescuento() {
+            // Arrange
+            String tipo = "CORPORATIVO";
+            double totalBase = 100;
+
+            // Act
+            double total = servicio.calcularTotal(tipo, totalBase);
+
+            // Assert
+            assertEquals(100.0, total, 0.001);
+        }
+
+        @Test
+        @DisplayName("CP-18 · VIP con total negativo es inválido")
+        void vipConTotalNegativoEsInvalido() {
+            // Arrange
+            String tipo = "VIP";
             double totalBase = -1;
 
             // Act
