@@ -59,4 +59,4 @@ Deben pasar 21 pruebas sin fallos (`BUILD SUCCESS`). El reporte de cobertura que
 Detalle de la revisión: `docs/04_AUTORREVISION.md`
 
 ## Uso de IA
-Se utilizó Claude (Anthropic) como asistente para proponer casos de prueba, redactar la documentación y revisar el código de las pruebas. Todas las pruebas se ejecutaron localmente, y los resultados, el análisis de cobertura y las decisiones fueron revisados y validados por el estudiante.
+Se utilizó Claude como asistente para proponer casos de prueba y revisar el código de las pruebas.
