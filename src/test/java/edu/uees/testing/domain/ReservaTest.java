@@ -1,5 +1,6 @@
 package edu.uees.testing.domain;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,10 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Reserva es un objeto simple del dominio: se prueba con instancias reales,
  * sin dobles de prueba.
  */
+@DisplayName("Reserva")
 class ReservaTest {
 
-    // CP-13
     @Test
+    @DisplayName("CP-13 · reserva sin id es rechazada")
     void reservaSinIdEsRechazada() {
         // Arrange
         String id = null;
@@ -27,8 +29,8 @@ class ReservaTest {
         assertEquals("Id obligatorio", ex.getMessage());
     }
 
-    // CP-14
     @Test
+    @DisplayName("CP-14 · reserva con id en blanco es rechazada")
     void reservaConIdEnBlancoEsRechazada() {
         // Arrange
         String id = "   ";
@@ -41,5 +43,19 @@ class ReservaTest {
 
         // Assert
         assertEquals("Id obligatorio", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("CP-20 · reserva sin tipo queda como NORMAL y pendiente")
+    void reservaSinTipoQuedaComoNormalYPendiente() {
+        // Arrange
+        String tipo = null;
+
+        // Act
+        Reserva reserva = new Reserva("R-004", tipo);
+
+        // Assert
+        assertEquals("NORMAL", reserva.getTipo());
+        assertEquals(EstadoReserva.PENDIENTE, reserva.getEstado());
     }
 }
