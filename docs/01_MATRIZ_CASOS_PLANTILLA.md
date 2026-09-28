@@ -48,12 +48,13 @@ Esta regla depende de tres servicios externos: el de disponibilidad, el reposito
 
 ## Regla de la reserva (agregada tras el análisis de JaCoCo)
 
-El reporte de cobertura mostró que la validación del identificador de la reserva nunca se ejecutaba en las pruebas. Se agregaron estos casos para protegerla.
+El reporte de cobertura mostró que la validación del identificador de la reserva nunca se ejecutaba en las pruebas (Laboratorio 2) y que el tipo por defecto tampoco se comprobaba (Ae6). Se agregaron estos casos para protegerlos.
 
 | ID | Regla | Escenario | Entrada | Esperado | Tipo | Riesgo |
 |---|---|---|---|---|---|---|
 | CP-13 | El id es obligatorio | Reserva sin id | id `null` | Error "Id obligatorio" | Inválido | Crear reservas imposibles de identificar. |
 | CP-14 | El id es obligatorio | Id en blanco | id `"   "` | Error "Id obligatorio" | Inválido | Aceptar un id que solo tiene espacios. |
+| CP-20 | Tipo NORMAL por defecto | Reserva sin tipo | id `R-004`, tipo `null` | Tipo "NORMAL" y estado PENDIENTE | Alternativo | Que una reserva sin tipo quede sin tarifa definida. |
 
 ## Por qué se eligió cada caso
 
@@ -74,14 +75,15 @@ El reporte de cobertura mostró que la validación del identificador de la reser
 - **CP-17:** confirma que cualquier tipo distinto de VIP o ESTUDIANTE paga el precio completo.
 - **CP-18:** confirma que el monto se valida antes de aplicar cualquier descuento, incluso para clientes VIP.
 - **CP-19:** guardar y avisar ya se verificaban, pero no su orden. Si se invirtieran, el cliente podría recibir la confirmación de una reserva que no quedó registrada.
+- **CP-20:** si una reserva llega sin tipo, el sistema le asigna "NORMAL". Era la única rama que JaCoCo seguía marcando como no comprobada.
 
 ## Resumen
 
 | Tipo | Casos | Cantidad |
 |---|---|---|
 | Normal | CP-01, CP-05, CP-10, CP-19 | 4 |
-| Alternativo | CP-06, CP-07, CP-11, CP-16, CP-17 | 5 |
+| Alternativo | CP-06, CP-07, CP-11, CP-16, CP-17, CP-20 | 6 |
 | Límite y extremo | CP-02, CP-03, CP-04, CP-08 | 4 |
 | Inválido | CP-09, CP-13, CP-14, CP-15 | 4 |
 | Excepción | CP-12, CP-18 | 2 |
-| **Total** | | **19** |
+| **Total** | | **20** |

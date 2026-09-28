@@ -44,4 +44,18 @@ class ReservaTest {
         // Assert
         assertEquals("Id obligatorio", ex.getMessage());
     }
+
+    @Test
+    @DisplayName("CP-20 · reserva sin tipo queda como NORMAL y pendiente")
+    void reservaSinTipoQuedaComoNormalYPendiente() {
+        // Arrange
+        String tipo = null;
+
+        // Act
+        Reserva reserva = new Reserva("R-004", tipo);
+
+        // Assert
+        assertEquals("NORMAL", reserva.getTipo());
+        assertEquals(EstadoReserva.PENDIENTE, reserva.getEstado());
+    }
 }
