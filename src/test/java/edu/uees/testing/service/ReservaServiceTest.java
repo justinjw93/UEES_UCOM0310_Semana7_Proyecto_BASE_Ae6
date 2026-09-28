@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -177,5 +178,44 @@ class ReservaServiceTest {
         assertEquals(EstadoReserva.CONFIRMADA, reserva.getEstado());
         verify(repository).guardar(reserva);
         verify(notificador).enviarConfirmacion(reserva);
+    }
+
+    // CP-11
+    @Test
+    void reservaNoDisponibleNoSeGuardaNiNotifica() {
+        // Arrange
+        when(disponibilidad.estaDisponible(any())).thenReturn(false);
+        Reserva reserva = new Reserva("R-002", "NORMAL");
+
+        // Act
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> servicio.confirmar(reserva)
+        );
+
+        // Assert
+        assertEquals("Horario no disponible", ex.getMessage());
+        assertEquals(EstadoReserva.PENDIENTE, reserva.getEstado());
+        verify(repository, never()).guardar(any());
+        verify(notificador, never()).enviarConfirmacion(any());
+    }
+
+    // CP-12
+    @Test
+    void reservaNulaNoConsultaDependencias() {
+        // Arrange
+        Reserva reserva = null;
+
+        // Act
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> servicio.confirmar(reserva)
+        );
+
+        // Assert
+        assertEquals("Reserva obligatoria", ex.getMessage());
+        verify(disponibilidad, never()).estaDisponible(any());
+        verify(repository, never()).guardar(any());
+        verify(notificador, never()).enviarConfirmacion(any());
     }
 }
