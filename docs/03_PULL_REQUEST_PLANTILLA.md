@@ -8,7 +8,7 @@ Proteger las reglas principales del módulo de reservas con una suite de pruebas
 ## Cambios realizados
 - Suite reorganizada por regla de negocio (cancelación, descuentos y confirmación). Cada prueba muestra el número de caso de la matriz. No se eliminó ninguna prueba de los laboratorios.
 - 6 casos nuevos (CP-15 a CP-20): horas negativas, tipo en minúsculas, tipo no reconocido, VIP con total negativo, orden entre guardar y notificar, y tipo NORMAL por defecto.
-- Matriz completa con 20 casos, análisis de cobertura con cuatro mediciones y README actualizado.
+- Matriz completa con 20 casos, análisis de cobertura con cuatro mediciones, autorrevisión y README actualizado.
 - Evidencias de ejecución, capturas de JaCoCo y un experimento que demuestra el valor de CP-19.
 
 ## Casos de prueba
@@ -50,11 +50,13 @@ Deben pasar 21 pruebas sin fallos (`BUILD SUCCESS`). El reporte de cobertura que
 - Al ejecutar aparece un aviso de Java sobre la carga de un agente, generado por Mockito. No afecta los resultados.
 
 ## Autorrevisión
-- [ ] Compila
-- [ ] Pruebas en verde
-- [ ] Sin archivos accidentales
-- [ ] Commits descriptivos
-- [ ] Documentación actualizada
+- [x] Compila
+- [x] Pruebas en verde (21 de 21)
+- [x] Sin archivos accidentales (se eliminó un CSV duplicado)
+- [x] Commits descriptivos
+- [x] Documentación actualizada
+
+Detalle de la revisión: `docs/04_AUTORREVISION.md`
 
 ## Uso de IA
 Se utilizó Claude (Anthropic) como asistente para proponer casos de prueba, redactar la documentación y revisar el código de las pruebas. Todas las pruebas se ejecutaron localmente, y los resultados, el análisis de cobertura y las decisiones fueron revisados y validados por el estudiante.

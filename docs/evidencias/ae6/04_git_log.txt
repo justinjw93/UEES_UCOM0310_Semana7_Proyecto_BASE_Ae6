@@ -1,0 +1,33 @@
+$ git branch
+* ae6/suite-pruebas
+  main
+  test/lab1-junit-casos
+  test/lab2-dobles-cobertura
+
+$ git log --oneline --decorate --graph
+* a4ed0d7 (HEAD -> ae6/suite-pruebas) chore: eliminar csv duplicado de la linea base de cobertura
+* a1be1f2 (origin/ae6/suite-pruebas) docs: completar evidencia ae6 y actualizar readme
+* a35fde4 docs: analizar cobertura jacoco ae6
+* 7ef4050 test: agregar caso detectado en analisis jacoco
+* e2ea81a test: verificar orden de guardado y notificacion
+* fa6e931 test: cubrir entradas invalidas y variantes de descuento
+* d49aaa6 refactor: organizar suite por regla con nested y mockito extension
+* 939b981 docs: completar matriz de casos ae6
+*   456be6d (origin/main, main) Merge pull request #2 from justinjw93/test/lab2-dobles-cobertura
+|\  
+| * 7ea649b (origin/test/lab2-dobles-cobertura, test/lab2-dobles-cobertura) chore: eliminar captura duplicada agregada por error
+| * 10a4d5f docs: registrar evidencia y reflexion del laboratorio 2
+| * f732154 docs: analizar cobertura jacoco
+| * 30d4ddd test: agregar caso detectado por jacoco
+| * d00d71c test: cubrir flujo sin disponibilidad y reserva nula
+| * 3e2bfff test: agregar escenarios con stub y mock
+|/  
+*   566fa20 Merge pull request #1 from justinjw93/test/lab1-junit-casos
+|\  
+| * e2a7bb7 (origin/test/lab1-junit-casos, test/lab1-junit-casos) docs: simplificar redaccion de matriz y reflexion del laboratorio 1
+| * d188fc1 docs: registrar evidencia y reflexion del laboratorio 1
+| * 3895da5 test: cubrir descuentos y total negativo
+| * ae7a9fc test: agregar casos de cancelacion con limites
+| * 00baf9a docs: disenar matriz de casos de cancelacion y descuentos
+|/  
+* d9541ec chore: registrar linea base semana 7
